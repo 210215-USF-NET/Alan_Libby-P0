@@ -9,5 +9,12 @@ namespace StoreModels
         public Product Product { get; set; }
 
         public int Quantity { get; set; }
+
+        public Item copy() {
+            Item item = new Item();
+            item.Product = Product;
+            item.Quantity = Quantity;
+            return item;
+        }
     }
 }
