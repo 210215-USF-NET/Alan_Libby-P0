@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\StoreModels\StoreModels.csproj" />
     <ProjectReference Include="..\StoreUI\StoreUI.csproj" />
+    <ProjectReference Include="..\StoreData\StoreData.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

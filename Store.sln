@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreModels", "StoreModels\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreUI", "StoreUI\StoreUI.csproj", "{933AAE2A-9025-4FDD-86C7-38FFFC2B7A81}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreData", "StoreData\StoreData.csproj", "{677D9544-C978-4877-8B26-9695EFEFB68F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,5 +60,17 @@ Global
 		{933AAE2A-9025-4FDD-86C7-38FFFC2B7A81}.Release|x64.Build.0 = Release|Any CPU
 		{933AAE2A-9025-4FDD-86C7-38FFFC2B7A81}.Release|x86.ActiveCfg = Release|Any CPU
 		{933AAE2A-9025-4FDD-86C7-38FFFC2B7A81}.Release|x86.Build.0 = Release|Any CPU
+		{677D9544-C978-4877-8B26-9695EFEFB68F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{677D9544-C978-4877-8B26-9695EFEFB68F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{677D9544-C978-4877-8B26-9695EFEFB68F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{677D9544-C978-4877-8B26-9695EFEFB68F}.Debug|x64.Build.0 = Debug|Any CPU
+		{677D9544-C978-4877-8B26-9695EFEFB68F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{677D9544-C978-4877-8B26-9695EFEFB68F}.Debug|x86.Build.0 = Debug|Any CPU
+		{677D9544-C978-4877-8B26-9695EFEFB68F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{677D9544-C978-4877-8B26-9695EFEFB68F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{677D9544-C978-4877-8B26-9695EFEFB68F}.Release|x64.ActiveCfg = Release|Any CPU
+		{677D9544-C978-4877-8B26-9695EFEFB68F}.Release|x64.Build.0 = Release|Any CPU
+		{677D9544-C978-4877-8B26-9695EFEFB68F}.Release|x86.ActiveCfg = Release|Any CPU
+		{677D9544-C978-4877-8B26-9695EFEFB68F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
