@@ -1,6 +1,7 @@
 ﻿using System;
 using StoreModels;
 using StoreUI;
+using StoreData;
 
 namespace StoreApp
 {
