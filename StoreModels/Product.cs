@@ -6,5 +6,8 @@ namespace StoreModels
         public string ProductName { get; set; }
         public double Price { get; set; }
         //todo: add more properties to define a product (maybe a category?)
+        public override string ToString() {
+            return ProductName + ": $" + Price;
+        }
     }
 }

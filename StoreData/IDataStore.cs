@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using StoreModels;
 
 namespace StoreData
@@ -7,5 +8,6 @@ namespace StoreData
     {
         public Customer GetCustomer(string name);
         public bool AddCustomer(string name, Customer customer);
+        public List<Product> GetProducts();
     }
 }

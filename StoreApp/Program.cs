@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using StoreModels;
 using StoreUI;
 using StoreData;
@@ -22,7 +23,7 @@ namespace StoreApp
             }
         }
         static void Login() {
-            string name = userInterface.getLine("Enter your name: ");
+            string name = userInterface.GetLine("Enter your name: ");
             currentUser = dataStore.GetCustomer(name);
             if (currentUser == null) {
                 currentUser = new Customer();
@@ -35,8 +36,8 @@ namespace StoreApp
         static bool MainMenu() {
             //Console.Clear();
             while (currentUser != null) {
-                userInterface.printText("Welcome, " + currentUser.Name);
-                userInterface.printText(
+                userInterface.PrintText("Welcome, " + currentUser.Name);
+                userInterface.PrintText(
                     "Please choose an option to continue...\n" +
                     "[0] View cart\n" +
                     "[1] Add item to cart\n" +
@@ -45,22 +46,22 @@ namespace StoreApp
                     "[4] Log Out\n" +
                     "[5] Exit"
                 );
-                switch(userInterface.getLine()) {
+                switch(userInterface.GetLine()) {
                     case "0":
                         Console.Clear();
-                        userInterface.printText("TODO");
+                        userInterface.PrintText("TODO");
                         break;
                     case "1":
                         Console.Clear();
-                        userInterface.printText("TODO");
+                        userInterface.PrintText("TODO");
                         break;
                     case "2":
                         Console.Clear();
-                        userInterface.printText("TODO");
+                        ListProductsMenu();
                         break;
                     case "3":
                         Console.Clear();
-                        userInterface.printText("TODO");
+                        userInterface.PrintText("TODO");
                         break;
                     case "4":
                         Console.Clear();
@@ -71,11 +72,30 @@ namespace StoreApp
                         return true;
                     default:
                         Console.Clear();
-                        userInterface.printText("Invalid input, please enter one of the given options");
+                        userInterface.PrintText("Invalid input, please enter one of the given options");
                         break;
                 }
             }
             return false;
+        }
+
+        static void ListProductsMenu() {
+            userInterface.PrintText("Enter the number associated with any product to view more information");
+            userInterface.PrintText("Or press enter to continue");
+            List<Product> products = dataStore.GetProducts();
+            for (int i = 0; i < products.Count; i++) {
+                userInterface.PrintText("[" + i + "] " + products[i].ProductName);
+            }
+            if (products.Count == 0) {
+                userInterface.PrintText("There are no products in the data store");
+            }
+            string input = userInterface.GetLine();
+            int index;
+            if (!int.TryParse(input, out index))
+                return;
+            if (index < 0 || index >= products.Count)
+                return;
+            userInterface.PrintResult(products[index].ToString());
         }
     }
 }

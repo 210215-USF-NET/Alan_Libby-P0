@@ -4,8 +4,9 @@ namespace StoreUI
 {
     public interface IUserInterface
     {
-        void printText(string text);
-        string getLine();
-        string getLine(string prompt);
+        void PrintText(string text);
+        void PrintResult(string text);
+        string GetLine();
+        string GetLine(string prompt);
     }
 }
