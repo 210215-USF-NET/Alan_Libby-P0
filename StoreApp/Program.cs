@@ -53,7 +53,7 @@ namespace StoreApp
                         break;
                     case "1":
                         Console.Clear();
-                        userInterface.PrintText("TODO");
+                        AddToCartMenu();
                         break;
                     case "2":
                         Console.Clear();
@@ -82,7 +82,7 @@ namespace StoreApp
         static void ListProductsMenu() {
             userInterface.PrintText("Enter the number associated with any product to view more information");
             userInterface.PrintText("Or press enter to continue");
-            List<Product> products = dataStore.GetProducts();
+            List<Product> products = dataStore.GetAllProducts();
             for (int i = 0; i < products.Count; i++) {
                 userInterface.PrintText("[" + i + "] " + products[i].ProductName);
             }
@@ -102,6 +102,75 @@ namespace StoreApp
                 userInterface.PrintText("\t" + loc.LocationName + "\t(" + dataStore.GetLocationInventory(loc, products[index]) + " in stock)");
             }
             userInterface.PrintResult("");
+        }
+
+        static void AddToCartMenu() {
+            userInterface.PrintText("Enter the number associated with any product to add it to your cart");
+            userInterface.PrintText("Or press enter to continue without adding anything");
+            List<Product> products;
+            if (cart.Location != null) {
+                products = dataStore.GetAvailableProducts(cart.Location);
+            } else {
+                products = dataStore.GetAllProducts();
+            }
+            for (int i = 0; i < products.Count; i++) {
+                userInterface.PrintText("[" + i + "] " + products[i].ProductName);
+            }
+            if (products.Count == 0) {
+                userInterface.PrintText("There are no products to show");
+            }
+            string input = userInterface.GetLine();
+            int index;
+            if (!int.TryParse(input, out index))
+                return;
+            if (index < 0 || index >= products.Count)
+                return;
+            Console.Clear();
+            if (cart.Location == null) {
+                LocationSelectMenu(products[index]);
+            }
+            Console.Clear();
+            if (cart.Location == null) {
+                return;
+            }
+            int inventory = dataStore.GetLocationInventory(cart.Location, products[index]);
+            int nProduct;
+            do {
+                userInterface.PrintText("How many of this product would you like to buy?");
+                userInterface.PrintText("Please enter a number in the range [ 1 , " + inventory + " ]");
+                input = userInterface.GetLine();
+                if (!int.TryParse(input, out nProduct)) {
+                    Console.Clear();
+                    userInterface.PrintResult("Canceled adding to cart");
+                    return;
+                }
+            } while (nProduct < 1 || nProduct > inventory);
+            Item item = new Item();
+            item.Product = products[index];
+            item.Quantity = nProduct;
+            cart.Items.Add(item);
+            dataStore.UpdateLocationInventory(cart.Location, products[index], -nProduct);
+            Console.Clear();
+            userInterface.PrintResult("Successfully added " + nProduct + " of " + products[index].ProductName + " to cart");
+        }
+
+        static void LocationSelectMenu(Product product) {
+            userInterface.PrintText("Enter the number corresponding to the location you want to order from");
+            userInterface.PrintText("Or press enter to return to the main menu");
+            List<Location> locations = dataStore.GetAvailableLocations(product);
+            for (int i = 0; i < locations.Count; i++) {
+                userInterface.PrintText("[" + i + "] " + locations[i].LocationName + "\t(" + dataStore.GetLocationInventory(locations[i], product) + " in stock)");
+            }
+            if (locations.Count == 0) {
+                userInterface.PrintText("There are no locations to show");
+            }
+            string input = userInterface.GetLine();
+            int index;
+            if (!int.TryParse(input, out index))
+                return;
+            if (index < 0 || index >= locations.Count)
+                return;
+            cart.Location = locations[index];
         }
     }
 }

@@ -56,6 +56,16 @@ namespace StoreData
             return x;
         }
 
+        public List<Product> GetAvailableProducts(Location location) {
+            List<Product> x = new List<Product>();
+            foreach(Product prod in products) {
+                if (inventory.ContainsKey(new InventoryTuple(location, prod))) {
+                    x.Add(prod);
+                }
+            }
+            return x;
+        }
+
         public int GetLocationInventory(Location location, Product product) {
             return inventory[new InventoryTuple(location, product)];
         }
@@ -74,8 +84,21 @@ namespace StoreData
             return true;
         }
 
-        public List<Product> GetProducts() {
+        public List<Product> GetAllProducts() {
             return products;
+        }
+
+        public void UpdateLocationInventory(Location location, Product product, int delta) {
+            InventoryTuple tuple = new InventoryTuple(location, product);
+            int i;
+            inventory.TryGetValue(tuple, out i);
+            i += delta;
+            if (i < 0)
+                throw new Exception("Tried to set inventory quantity to " + i);
+            else if (i == 0) 
+                inventory.Remove(tuple);
+            else
+                inventory[tuple] = i;
         }
     }
 }
