@@ -95,7 +95,13 @@ namespace StoreApp
                 return;
             if (index < 0 || index >= products.Count)
                 return;
-            userInterface.PrintResult(products[index].ToString());
+            Console.Clear();
+            userInterface.PrintText(products[index].ToString());
+            userInterface.PrintText("\nAvailable At:");
+            foreach(Location loc in dataStore.GetAvailableLocations(products[index])) {
+                userInterface.PrintText("\t" + loc.LocationName + "\t(" + dataStore.GetLocationInventory(loc, products[index]) + " in stock)");
+            }
+            userInterface.PrintResult("");
         }
     }
 }

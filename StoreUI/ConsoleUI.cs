@@ -21,7 +21,7 @@ namespace StoreUI
         }
 
         public void PrintResult(string text) {
-            Console.Clear();
+            //Console.Clear();
             Console.WriteLine(text);
             Console.Write("Press enter to continue:");
             Console.ReadLine();
