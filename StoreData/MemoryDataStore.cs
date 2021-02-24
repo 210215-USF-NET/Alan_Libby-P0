@@ -18,12 +18,14 @@ namespace StoreData
         private Dictionary<InventoryTuple, int> inventory;
         private List<Location> locations;
         private List<Product> products;
+        private List<Order> orders;
         public MemoryDataStore()
         {
             customers = new Dictionary<string, Customer>();
             inventory = new Dictionary<InventoryTuple, int>();
             locations = new List<Location>();
             products = new List<Product>();
+            orders = new List<Order>();
             // TODO: insert default values
 
             locations.Add(new Location());
@@ -99,6 +101,20 @@ namespace StoreData
                 inventory.Remove(tuple);
             else
                 inventory[tuple] = i;
+        }
+
+        public void PlaceOrder(Order order) {
+            orders.Add(order);
+        }
+
+        public List<Order> GetCustomerOrders(Customer customer) {
+            List<Order> x = new List<Order>();
+            foreach(Order order in orders) {
+                if (order.Customer == customer) {
+                    x.Add(order);
+                }
+            }
+            return x;
         }
     }
 }

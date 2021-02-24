@@ -13,5 +13,7 @@ namespace StoreData
         List<Product> GetAvailableProducts(Location location);
         int GetLocationInventory(Location location, Product product);
         void UpdateLocationInventory(Location location, Product product, int delta);
+        void PlaceOrder(Order order);
+        List<Order> GetCustomerOrders(Customer customer);
     }
 }

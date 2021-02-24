@@ -16,5 +16,10 @@ namespace StoreModels
             item.Quantity = Quantity;
             return item;
         }
+
+        public double Total { get {
+            if (this.Product == null) return 0;
+            return this.Product.Price * this.Quantity;
+        } }
     }
 }

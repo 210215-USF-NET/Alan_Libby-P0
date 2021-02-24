@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 
 namespace StoreModels
 {
@@ -11,6 +12,7 @@ namespace StoreModels
         public Location Location { get; set; }
         public List<Item> Items { get; set; }
         public bool CheckedOut { get; set; }
+        public DateTime CheckoutTimestamp { get; set; }
 
         public Order() {
             this.Items = new List<Item>();
@@ -28,5 +30,12 @@ namespace StoreModels
             }
             return new Order(Customer, Location, newList, false);
         }
+        public double Total { get {
+            double sum = 0;
+            foreach (Item item in this.Items) {
+                sum += item.Total;
+            }
+            return sum;
+        }}
     }
 }

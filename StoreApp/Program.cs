@@ -31,6 +31,7 @@ namespace StoreApp
                 dataStore.AddCustomer(name, currentUser);
             }
             cart = new Order();
+            cart.Customer = currentUser;
         }
 
         static bool MainMenu() {
@@ -40,34 +41,94 @@ namespace StoreApp
                 userInterface.PrintText(
                     "Please choose an option to continue...\n" +
                     "[0] View cart\n" +
-                    "[1] Add item to cart\n" +
+                    (cart.CheckedOut ? "[1] Check Cart Inventory\n" : "[1] Add item to cart\n") +
                     "[2] Search for items\n" +
-                    "[3] Check Out\n" +
-                    "[4] Log Out\n" +
-                    "[5] Exit"
+                    (cart.CheckedOut ? "[3] Place Order Again\n" : "[3] Check Out\n") +
+                    (cart.CheckedOut ? "[4] Close previous order\n" : "[4] View Previous Order\n") +
+                    "[5] Log Out\n" +
+                    "[6] Exit"
                 );
                 switch(userInterface.GetLine()) {
-                    case "0":
+                    case "0":   // View cart
                         Console.Clear();
-                        userInterface.PrintText("TODO");
+                        ViewCartMenu();
                         break;
-                    case "1":
+                    case "1":   // Search available items & add to cart | Check inventory of items in cart
                         Console.Clear();
+                        if (cart.CheckedOut) {
+                            string inventoryLog = "Checking whether all products from this order are still in stock\n";
+                            bool canReorder = true;
+                            foreach(Item item in cart.Items) {
+                                int curInventory = dataStore.GetLocationInventory(cart.Location, item.Product);
+                                inventoryLog += "\n" + item.Product.ProductName + " in stock: " + curInventory + " (ordered " + item.Quantity + ')';
+                                if (curInventory < item.Quantity) canReorder = false;
+                            }
+                            inventoryLog += "\n\nYour order is" + (canReorder ? "" : " not") + " in stock.";
+                            userInterface.PrintResult(inventoryLog);
+                            break;
+                        }
                         AddToCartMenu();
                         break;
-                    case "2":
+                    case "2":   // Search full item list
                         Console.Clear();
                         ListProductsMenu();
                         break;
-                    case "3":
+                    case "3":   // Check out | Copy Cart
                         Console.Clear();
-                        userInterface.PrintText("TODO");
+                        if (cart.CheckedOut) {
+                            bool canReorder = true;
+                            foreach(Item item in cart.Items) {
+                                int curInventory = dataStore.GetLocationInventory(cart.Location, item.Product);
+                                if (curInventory < item.Quantity) canReorder = false;
+                            }
+                            if (canReorder) {
+                                Order newCart = cart.copy();
+                                foreach(Item item in cart.Items) {
+                                    dataStore.UpdateLocationInventory(newCart.Location, item.Product, -item.Quantity);
+                                }
+                                cart = newCart;
+                                userInterface.PrintResult("Copied all items into your cart");
+                            } else {
+                                userInterface.PrintResult("Not enough inventory to copy this order");
+                            }
+                            break;
+                        }
+                        if (cart.Items.Count == 0) {
+                            userInterface.PrintResult("Please add at least one item to your cart first");
+                            break;
+                        }
+                        if (userInterface.GetLine("Your total is " + cart.Total.ToString("C") + "\nCheck out? [ y / N ]: ").ToLower().Equals("y")) {
+                            userInterface.PrintResult("Order successful, thanks for shopping with us!");
+                            cart.CheckedOut = true;
+                            cart.CheckoutTimestamp = DateTime.Now;
+                            dataStore.PlaceOrder(cart);
+                            cart = new Order();
+                            cart.Customer = currentUser;
+                        }
+                        Console.Clear();
                         break;
-                    case "4":
+                    case "4":   // View previous order | return to current order
+                        Console.Clear();
+                        if (cart.CheckedOut) {
+                            cart = new Order();
+                            cart.Customer = currentUser;
+                            break;
+                        }
+                        List<Order> previousOrders = dataStore.GetCustomerOrders(currentUser);
+                        int index = CartSelectMenu(previousOrders);
+                        if (index < 0) {
+                            break;
+                        }
+                        if (userInterface.GetLine("This will overwrite your current cart\nProceed? [ y / N ]: ").ToLower().Equals("y")) {
+                            cart = previousOrders[index];
+                        }
+                        Console.Clear();
+                        break;
+                    case "5":   // Log out
                         Console.Clear();
                         currentUser = null;
                         break;
-                    case "5":
+                    case "6":   // Exit
                         Console.Clear();
                         return true;
                     default:
@@ -91,6 +152,7 @@ namespace StoreApp
             }
             string input = userInterface.GetLine();
             int index;
+            Console.Clear();
             if (!int.TryParse(input, out index))
                 return;
             if (index < 0 || index >= products.Count)
@@ -121,6 +183,7 @@ namespace StoreApp
             }
             string input = userInterface.GetLine();
             int index;
+            Console.Clear();
             if (!int.TryParse(input, out index))
                 return;
             if (index < 0 || index >= products.Count)
@@ -145,10 +208,15 @@ namespace StoreApp
                     return;
                 }
             } while (nProduct < 1 || nProduct > inventory);
-            Item item = new Item();
-            item.Product = products[index];
-            item.Quantity = nProduct;
-            cart.Items.Add(item);
+            Item item = cart.Items.Find((item) => item.Product == products[index]);
+            if (item == null) {
+                item = new Item();
+                item.Product = products[index];
+                item.Quantity = nProduct;
+                cart.Items.Add(item);
+            } else {
+                item.Quantity += nProduct;
+            }
             dataStore.UpdateLocationInventory(cart.Location, products[index], -nProduct);
             Console.Clear();
             userInterface.PrintResult("Successfully added " + nProduct + " of " + products[index].ProductName + " to cart");
@@ -165,12 +233,58 @@ namespace StoreApp
                 userInterface.PrintText("There are no locations to show");
             }
             string input = userInterface.GetLine();
+            Console.Clear();
             int index;
             if (!int.TryParse(input, out index))
                 return;
             if (index < 0 || index >= locations.Count)
                 return;
             cart.Location = locations[index];
+        }
+
+        static void ViewCartMenu() {
+            userInterface.PrintText("Enter the number of an Item to remove it from your cart");
+            userInterface.PrintText("Or press enter to return to the main menu");
+            if (cart.Location != null) {
+                userInterface.PrintText("Ordering from " + cart.Location.LocationName);
+            }
+            for (int i = 0; i < cart.Items.Count; i++) {
+                userInterface.PrintText("[" + i + "] " + cart.Items[i].Product.ProductName + "\t(" + cart.Items[i].Quantity + " @ " + cart.Items[i].Product.Price.ToString("C") + " each)\t" + cart.Items[i].Total.ToString("C"));
+            }
+            if (cart.Items.Count == 0) {
+                userInterface.PrintText("There are no items in your cart");
+            }
+            string input = userInterface.GetLine();
+            int index;
+            Console.Clear();
+            if (!int.TryParse(input, out index))
+                return;
+            if (index < 0 || index >= cart.Items.Count)
+                return;
+            Item item = cart.Items[index];
+            dataStore.UpdateLocationInventory(cart.Location, item.Product, item.Quantity);
+            cart.Items.RemoveAt(index);
+            if (cart.Items.Count == 0) {
+                cart.Location = null;
+            }
+            userInterface.PrintResult("Removed " + item.Quantity + " of " + item.Product.ProductName + " from cart");
+        }
+
+        static int CartSelectMenu(List<Order> previousOrders) {
+            for (int i = 0; i < previousOrders.Count; i++) {
+                userInterface.PrintText("[" + i + "] " + previousOrders[i].CheckoutTimestamp.ToString());
+            }
+            if (previousOrders.Count == 0) {
+                userInterface.PrintText("You don't seem to have placed any previous orders");
+            }
+            string input = userInterface.GetLine();
+            int index;
+            Console.Clear();
+            if (!int.TryParse(input, out index))
+                return -1;
+            if (index < 0 || index >= previousOrders.Count)
+                return -1;
+            return index;
         }
     }
 }
