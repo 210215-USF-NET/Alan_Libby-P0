@@ -243,8 +243,12 @@ namespace StoreApp
         }
 
         static void ViewCartMenu() {
-            userInterface.PrintText("Enter the number of an Item to remove it from your cart");
-            userInterface.PrintText("Or press enter to return to the main menu");
+            if (cart.CheckedOut) {
+                userInterface.PrintText("Press enter to return to the main menu");
+            } else {
+                userInterface.PrintText("Enter the number of an Item to remove it from your cart");
+                userInterface.PrintText("Or press enter to return to the main menu");
+            }
             if (cart.Location != null) {
                 userInterface.PrintText("Ordering from " + cart.Location.LocationName);
             }
@@ -257,7 +261,7 @@ namespace StoreApp
             string input = userInterface.GetLine();
             int index;
             Console.Clear();
-            if (!int.TryParse(input, out index))
+            if (!int.TryParse(input, out index) || cart.CheckedOut)
                 return;
             if (index < 0 || index >= cart.Items.Count)
                 return;
