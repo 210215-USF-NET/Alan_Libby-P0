@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Transactions;
 
 namespace StoreData
 {
@@ -11,8 +12,10 @@ namespace StoreData
     {
         protected Entities.storeContext ctx;
         protected StoreMapper mapper;
-        public DatabaseDataStore(Entities.storeContext ctx) {
+        protected Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction;
+        public DatabaseDataStore(Entities.storeContext ctx, ref Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction) {
             this.ctx = ctx;
+            this.transaction = transaction;
             mapper = new StoreMapper();
         }
         public Models.Customer GetCustomer(string name) {
@@ -51,7 +54,7 @@ namespace StoreData
             } else if (i.Quantity == 0) {
                 ctx.Inventories.Remove(i);
             }
-            ctx.SaveChanges(); // TODO: find a way to avoid this
+            ctx.SaveChanges();
         }
         public void PlaceOrder(Models.Order order) {
             Entities.StoreOrder o = new Entities.StoreOrder();
@@ -66,6 +69,14 @@ namespace StoreData
                 o.OrderItems.Add(oi);
             }
             ctx.SaveChanges();
+            try {
+                transaction.Commit();
+                transaction.Dispose();
+                transaction = ctx.Database.BeginTransaction();
+            } catch(Exception e) {
+                Console.WriteLine(e.StackTrace);
+                transaction.Rollback();
+            }
         }
         public List<Models.Order> GetCustomerOrders(Models.Customer customer) {
             return ctx.StoreOrders.Include(o => o.Customer).Include(o => o.Location).Include(o => o.OrderItems).ThenInclude(i => i.Product).Where(o => o.CustomerId == customer.CustomerID).Select(o => mapper.ParseOrder(o)).ToList();

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using StoreData.Entities;
+using System.Transactions;
 
 namespace StoreApp
 {
@@ -30,15 +31,17 @@ namespace StoreApp
             .Options;
 
             using var ctx = new storeContext(options);
+            var transaction = ctx.Database.BeginTransaction();
 
             userInterface = new ConsoleUI();
             //dataStore = new MemoryDataStore();
-            dataStore = new DatabaseDataStore(ctx);
+            dataStore = new DatabaseDataStore(ctx, ref transaction);
             bool exit = false;
             while (!exit) {
                 Login();
                 exit = MainMenu();
             }
+            transaction.Dispose();
         }
         static void Login() {
             string name = userInterface.GetLine("Enter your name: ");
