@@ -9,7 +9,6 @@ namespace StoreData
 {
     public class DatabaseDataStore : IDataStore
     {
-        protected Dictionary<int,Entities.Inventory> cart;
         protected Entities.storeContext ctx;
         protected StoreMapper mapper;
         public DatabaseDataStore(Entities.storeContext ctx) {
