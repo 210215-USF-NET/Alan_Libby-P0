@@ -6,6 +6,7 @@ namespace StoreModels
     /// </summary>
     public class Item
     {
+        public int? ItemID { get; set; }
         public Product Product { get; set; }
 
         public int Quantity { get; set; }
@@ -17,7 +18,7 @@ namespace StoreModels
             return item;
         }
 
-        public double Total { get {
+        public decimal Total { get {
             if (this.Product == null) return 0;
             return this.Product.Price * this.Quantity;
         } }

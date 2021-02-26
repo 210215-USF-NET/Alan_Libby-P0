@@ -26,7 +26,7 @@ CREATE TABLE StoreOrder (
 	orderID int IDENTITY,
 	customerID int references Customer(customerID) NOT NULL,
 	locationID int references Location(locationID),
-	checkedOut bit NOT NULL,
+	checkedOut datetime2(3),
 	CONSTRAINT PK_Order PRIMARY KEY (orderID)
 )
 CREATE TABLE OrderItem (

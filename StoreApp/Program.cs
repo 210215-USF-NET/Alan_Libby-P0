@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using StoreModels;
 using StoreUI;
 using StoreData;
+using Microsoft.Extensions.Configuration;
+using System.IO;
+using Microsoft.EntityFrameworkCore;
+using StoreData.Entities;
 
 namespace StoreApp
 {
@@ -10,12 +14,26 @@ namespace StoreApp
     {
         static IUserInterface userInterface;
         static IDataStore dataStore;
-        static Order cart = null;
-        static Customer currentUser = null;
+        static StoreModels.Order cart = null;
+        static StoreModels.Customer currentUser = null;
         static void Main(string[] args)
         {
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+            
+            string connectionString = configuration.GetConnectionString("store");
+
+            DbContextOptions<storeContext> options = new DbContextOptionsBuilder<storeContext>()
+            .UseSqlServer(connectionString)
+            .Options;
+
+            using var ctx = new storeContext(options);
+
             userInterface = new ConsoleUI();
-            dataStore = new MemoryDataStore();
+            //dataStore = new MemoryDataStore();
+            dataStore = new DatabaseDataStore(ctx);
             bool exit = false;
             while (!exit) {
                 Login();
@@ -26,11 +44,11 @@ namespace StoreApp
             string name = userInterface.GetLine("Enter your name: ");
             currentUser = dataStore.GetCustomer(name);
             if (currentUser == null) {
-                currentUser = new Customer();
+                currentUser = new StoreModels.Customer();
                 currentUser.Name = name;
-                dataStore.AddCustomer(name, currentUser);
+                currentUser.CustomerID = dataStore.AddCustomer(name, currentUser);
             }
-            cart = new Order();
+            cart = new StoreModels.Order();
             cart.Customer = currentUser;
         }
 
@@ -143,7 +161,7 @@ namespace StoreApp
         static void ListProductsMenu() {
             userInterface.PrintText("Enter the number associated with any product to view more information");
             userInterface.PrintText("Or press enter to continue");
-            List<Product> products = dataStore.GetAllProducts();
+            List<StoreModels.Product> products = dataStore.GetAllProducts();
             for (int i = 0; i < products.Count; i++) {
                 userInterface.PrintText("[" + i + "] " + products[i].ProductName);
             }
@@ -160,7 +178,7 @@ namespace StoreApp
             Console.Clear();
             userInterface.PrintText(products[index].ToString());
             userInterface.PrintText("\nAvailable At:");
-            foreach(Location loc in dataStore.GetAvailableLocations(products[index])) {
+            foreach(StoreModels.Location loc in dataStore.GetAvailableLocations(products[index])) {
                 userInterface.PrintText("\t" + loc.LocationName + "\t(" + dataStore.GetLocationInventory(loc, products[index]) + " in stock)");
             }
             userInterface.PrintResult("");
@@ -169,7 +187,7 @@ namespace StoreApp
         static void AddToCartMenu() {
             userInterface.PrintText("Enter the number associated with any product to add it to your cart");
             userInterface.PrintText("Or press enter to continue without adding anything");
-            List<Product> products;
+            List<StoreModels.Product> products;
             if (cart.Location != null) {
                 products = dataStore.GetAvailableProducts(cart.Location);
             } else {
@@ -222,10 +240,10 @@ namespace StoreApp
             userInterface.PrintResult("Successfully added " + nProduct + " of " + products[index].ProductName + " to cart");
         }
 
-        static void LocationSelectMenu(Product product) {
+        static void LocationSelectMenu(StoreModels.Product product) {
             userInterface.PrintText("Enter the number corresponding to the location you want to order from");
             userInterface.PrintText("Or press enter to return to the main menu");
-            List<Location> locations = dataStore.GetAvailableLocations(product);
+            List<StoreModels.Location> locations = dataStore.GetAvailableLocations(product);
             for (int i = 0; i < locations.Count; i++) {
                 userInterface.PrintText("[" + i + "] " + locations[i].LocationName + "\t(" + dataStore.GetLocationInventory(locations[i], product) + " in stock)");
             }

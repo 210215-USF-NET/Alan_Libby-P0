@@ -8,6 +8,7 @@ namespace StoreModels
     /// </summary>
     public class Order
     {
+        public int? OrderID { get; set; }
         public Customer Customer { get; set; }
         public Location Location { get; set; }
         public List<Item> Items { get; set; }
@@ -30,8 +31,8 @@ namespace StoreModels
             }
             return new Order(Customer, Location, newList, false);
         }
-        public double Total { get {
-            double sum = 0;
+        public decimal Total { get {
+            decimal sum = 0;
             foreach (Item item in this.Items) {
                 sum += item.Total;
             }

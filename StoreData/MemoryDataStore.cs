@@ -40,7 +40,7 @@ namespace StoreData
             for (int i = 0; i < 5; ++i) {
                 Product product = new Product();
                 product.ProductName = "Product " + i;
-                product.Price = i + 0.99;
+                product.Price = i + (decimal)0.99;
                 products.Add(product);
 
                 inventory.Add(new InventoryTuple(locations[i % 2], product), i * 100 + 50);
@@ -79,11 +79,11 @@ namespace StoreData
             return null;
         }
 
-        public bool AddCustomer(string name, Customer customer) {
+        public int? AddCustomer(string name, Customer customer) {
             if (customers.ContainsKey(name))
-                return false;
+                return null;
             customers.Add(name, customer);
-            return true;
+            return 0;
         }
 
         public List<Product> GetAllProducts() {
