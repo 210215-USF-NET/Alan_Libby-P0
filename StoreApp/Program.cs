@@ -69,7 +69,7 @@ namespace StoreApp
                     (managerMenu ? "[0] View inventory changes\n" : "[0] View cart\n") +
                     (managerMenu ? "[1] Restock item\n" : (cart.CheckedOut ? "[1] Check Cart Inventory\n" : "[1] Add item to cart\n")) +
                     "[2] Search for items\n" +
-                    (managerMenu ?  "[3] Save inventory changes\n" : (cart.CheckedOut ? "[3] Place Order Again\n" : "[3] Check Out\n")) +
+                    (cart.CheckedOut ? "[3] Repeat Order\n" : (managerMenu ?  "[3] Save inventory changes\n" : "[3] Check Out\n")) +
                     (managerMenu ? "[4] View order history\n" : (cart.CheckedOut ? "[4] Close previous order\n" : "[4] View Previous Order\n")) +
                     "[5] Log Out\n" +
                     "[6] Exit"
@@ -110,9 +110,10 @@ namespace StoreApp
                             if (canReorder) {
                                 Order newCart = cart.copy();
                                 foreach(Item item in cart.Items) {
-                                    dataStore.UpdateLocationInventory(newCart.Location, item.Product, -item.Quantity);
+                                    dataStore.UpdateLocationInventory(newCart.Location, item.Product, item.Quantity * (managerMenu ? 1 : -1));
                                 }
                                 cart = newCart;
+                                newCart.Customer = currentUser;
                                 userInterface.PrintResult("Copied all items into your cart");
                             } else {
                                 userInterface.PrintResult("Not enough inventory to copy this order");
@@ -123,8 +124,8 @@ namespace StoreApp
                             userInterface.PrintResult("Please add at least one item to your cart first");
                             break;
                         }
-                        if (userInterface.GetLine("Your total is " + cart.Total.ToString("C") + "\nCheck out? [ y / N ]: ").ToLower().Equals("y")) {
-                            userInterface.PrintResult("Order successful, thanks for shopping with us!");
+                        if (managerMenu || userInterface.GetLine("Your total is " + cart.Total.ToString("C") + "\nCheck out? [ y / N ]: ").ToLower().Equals("y")) {
+                            userInterface.PrintResult(managerMenu ? "Restock successful" : "Order successful, thanks for shopping with us!");
                             cart.CheckedOut = true;
                             cart.CheckoutTimestamp = DateTime.Now;
                             dataStore.PlaceOrder(cart);
@@ -141,7 +142,7 @@ namespace StoreApp
                             break;
                         }
                         bool sortByPrice = userInterface.GetLine("Sort by price? (default: date) [ y / N ]: ").ToLower().Equals("y");
-                        bool asc = userInterface.GetLine("Use ascending order? [ y / N ]: ").ToLower().Equals("y");
+                        bool desc = userInterface.GetLine("Use descending order? [ y / N ]: ").ToLower().Equals("y");
                         List<Order> previousOrders =  managerMenu ? dataStore.GetAllOrders() : dataStore.GetCustomerOrders(currentUser);
                         if (sortByPrice) {
                             previousOrders.Sort((o1, o2) => {
@@ -151,7 +152,7 @@ namespace StoreApp
                                 return 1;
                             });
                         }
-                        if (asc) {
+                        if (desc) {
                             previousOrders.Reverse();
                         }
                         int index = CartSelectMenu(previousOrders);
@@ -238,15 +239,15 @@ namespace StoreApp
             int inventory = dataStore.GetLocationInventory(cart.Location, products[index]);
             int nProduct;
             do {
-                userInterface.PrintText("How many of this product would you like to buy?");
-                userInterface.PrintText("Please enter a number in the range [ 1 , " + inventory + " ]");
+                userInterface.PrintText("How many of this product would you like to " + (managerMenu ? "restock?" : "buy?"));
+                if (!managerMenu) userInterface.PrintText("Please enter a number in the range [ 1 , " + inventory + " ]");
                 input = userInterface.GetLine();
                 if (!int.TryParse(input, out nProduct)) {
                     Console.Clear();
                     userInterface.PrintResult("Canceled adding to cart");
                     return;
                 }
-            } while (nProduct < 1 || nProduct > inventory);
+            } while (nProduct < 1 || (!managerMenu && nProduct > inventory));
             Item item = cart.Items.Find((item) => item.Product == products[index]);
             if (item == null) {
                 item = new Item();
@@ -256,7 +257,7 @@ namespace StoreApp
             } else {
                 item.Quantity += nProduct;
             }
-            dataStore.UpdateLocationInventory(cart.Location, products[index], -nProduct);
+            dataStore.UpdateLocationInventory(cart.Location, products[index], nProduct * (managerMenu ? 1 : -1));
             Console.Clear();
             userInterface.PrintResult("Successfully added " + nProduct + " of " + products[index].ProductName + " to cart");
         }
