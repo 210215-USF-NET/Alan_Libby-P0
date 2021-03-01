@@ -7,6 +7,7 @@ namespace StoreModels
     {
         public int? CustomerID { get; set; }
         public string Name { get; set; }
+        public bool IsManager { get; set; }
         //TODO: add more properties to identify the customer
     }
 }

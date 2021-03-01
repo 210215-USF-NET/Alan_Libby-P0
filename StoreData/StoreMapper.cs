@@ -11,12 +11,14 @@ namespace StoreData
             Models.Customer c = new Models.Customer();
             c.CustomerID = customer.CustomerId;
             c.Name = customer.CustomerName;
+            c.IsManager = customer.IsManager;
             return c;
         }
         public Entities.Customer ParseCustomer(Models.Customer customer) {
             Entities.Customer c = new Entities.Customer();
             if (customer.CustomerID != null) c.CustomerId = (int)customer.CustomerID;
             c.CustomerName = customer.Name;
+            c.IsManager = customer.IsManager;
             return c;
         }
         // public Models.Inventory ParseInventory(Entities.Inventory inventory) {

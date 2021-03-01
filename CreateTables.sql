@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS Customer;
 CREATE TABLE Customer (
 	customerID int IDENTITY,
 	customerName nvarchar(100) NOT NULL,
+	isManager bit NOT NULL DEFAULT 0,
 	CONSTRAINT PK_Customer PRIMARY KEY (customerID)
 );
 CREATE TABLE Location (
