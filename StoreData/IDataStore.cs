@@ -15,5 +15,6 @@ namespace StoreData
         void UpdateLocationInventory(Location location, Product product, int delta);
         void PlaceOrder(Order order);
         List<Order> GetCustomerOrders(Customer customer);
+        List<Order> GetAllOrders();
     }
 }

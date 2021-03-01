@@ -81,5 +81,8 @@ namespace StoreData
         public List<Models.Order> GetCustomerOrders(Models.Customer customer) {
             return ctx.StoreOrders.Include(o => o.Customer).Include(o => o.Location).Include(o => o.OrderItems).ThenInclude(i => i.Product).Where(o => o.CustomerId == customer.CustomerID).Select(o => mapper.ParseOrder(o)).ToList();
         }
+        public List<Models.Order> GetAllOrders() {
+            return ctx.StoreOrders.Include(o => o.Customer).Include(o => o.Location).Include(o => o.OrderItems).ThenInclude(i => i.Product).Select(o => mapper.ParseOrder(o)).ToList();
+        }
     }
 }

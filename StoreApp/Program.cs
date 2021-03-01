@@ -17,6 +17,7 @@ namespace StoreApp
         static IDataStore dataStore;
         static StoreModels.Order cart = null;
         static StoreModels.Customer currentUser = null;
+        static bool managerMenu = false;
         static void Main(string[] args)
         {
             var configuration = new ConfigurationBuilder()
@@ -53,6 +54,10 @@ namespace StoreApp
             }
             cart = new StoreModels.Order();
             cart.Customer = currentUser;
+            managerMenu = false;
+            if (currentUser.IsManager) {
+                managerMenu = userInterface.GetLine("Would you like to log in as a manager? [ y / N ]: ").ToLower().Equals("y");
+            }
         }
 
         static bool MainMenu() {
@@ -61,11 +66,11 @@ namespace StoreApp
                 userInterface.PrintText("Welcome, " + currentUser.Name);
                 userInterface.PrintText(
                     "Please choose an option to continue...\n" +
-                    "[0] View cart\n" +
-                    (cart.CheckedOut ? "[1] Check Cart Inventory\n" : "[1] Add item to cart\n") +
+                    (managerMenu ? "[0] View inventory changes\n" : "[0] View cart\n") +
+                    (managerMenu ? "[1] Restock item\n" : (cart.CheckedOut ? "[1] Check Cart Inventory\n" : "[1] Add item to cart\n")) +
                     "[2] Search for items\n" +
-                    (cart.CheckedOut ? "[3] Place Order Again\n" : "[3] Check Out\n") +
-                    (cart.CheckedOut ? "[4] Close previous order\n" : "[4] View Previous Order\n") +
+                    (managerMenu ?  "[3] Save inventory changes\n" : (cart.CheckedOut ? "[3] Place Order Again\n" : "[3] Check Out\n")) +
+                    (managerMenu ? "[4] View order history\n" : (cart.CheckedOut ? "[4] Close previous order\n" : "[4] View Previous Order\n")) +
                     "[5] Log Out\n" +
                     "[6] Exit"
                 );
@@ -135,7 +140,20 @@ namespace StoreApp
                             cart.Customer = currentUser;
                             break;
                         }
-                        List<Order> previousOrders = dataStore.GetCustomerOrders(currentUser);
+                        bool sortByPrice = userInterface.GetLine("Sort by price? (default: date) [ y / N ]: ").ToLower().Equals("y");
+                        bool asc = userInterface.GetLine("Use ascending order? [ y / N ]: ").ToLower().Equals("y");
+                        List<Order> previousOrders =  managerMenu ? dataStore.GetAllOrders() : dataStore.GetCustomerOrders(currentUser);
+                        if (sortByPrice) {
+                            previousOrders.Sort((o1, o2) => {
+                                decimal diff = o1.Total - o2.Total;
+                                if (diff == 0) return 0;
+                                if (diff < 0) return -1;
+                                return 1;
+                            });
+                        }
+                        if (asc) {
+                            previousOrders.Reverse();
+                        }
                         int index = CartSelectMenu(previousOrders);
                         if (index < 0) {
                             break;
@@ -267,11 +285,11 @@ namespace StoreApp
             if (cart.CheckedOut) {
                 userInterface.PrintText("Press enter to return to the main menu");
             } else {
-                userInterface.PrintText("Enter the number of an Item to remove it from your cart");
+                userInterface.PrintText(managerMenu ? "Enter the number of an item to cancel restocking it" : "Enter the number of an Item to remove it from your cart");
                 userInterface.PrintText("Or press enter to return to the main menu");
             }
             if (cart.Location != null) {
-                userInterface.PrintText("Ordering from " + cart.Location.LocationName);
+                userInterface.PrintText((managerMenu ? "Updating inventory for " : "Ordering from ") + cart.Location.LocationName);
             }
             for (int i = 0; i < cart.Items.Count; i++) {
                 userInterface.PrintText("[" + i + "] " + cart.Items[i].Product.ProductName + "\t(" + cart.Items[i].Quantity + " @ " + cart.Items[i].Product.Price.ToString("C") + " each)\t" + cart.Items[i].Total.ToString("C"));
@@ -297,10 +315,10 @@ namespace StoreApp
 
         static int CartSelectMenu(List<Order> previousOrders) {
             for (int i = 0; i < previousOrders.Count; i++) {
-                userInterface.PrintText("[" + i + "] " + previousOrders[i].CheckoutTimestamp.ToString());
+                userInterface.PrintText("[" + i + "] " + (managerMenu ? previousOrders[i].Customer.Name + "\t" : "") + previousOrders[i].CheckoutTimestamp.ToString() + "\t" + previousOrders[i].Total.ToString("C"));
             }
             if (previousOrders.Count == 0) {
-                userInterface.PrintText("You don't seem to have placed any previous orders");
+                userInterface.PrintText(managerMenu ? "There don't seem to be any previous orders" : "You don't seem to have placed any previous orders");
             }
             string input = userInterface.GetLine();
             int index;

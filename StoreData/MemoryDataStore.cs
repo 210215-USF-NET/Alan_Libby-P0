@@ -116,5 +116,9 @@ namespace StoreData
             }
             return x;
         }
+
+        public List<Order> GetAllOrders() {
+            return orders;
+        }
     }
 }
