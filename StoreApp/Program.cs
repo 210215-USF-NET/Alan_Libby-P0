@@ -316,7 +316,7 @@ namespace StoreApp
 
         static int CartSelectMenu(List<Order> previousOrders) {
             for (int i = 0; i < previousOrders.Count; i++) {
-                userInterface.PrintText("[" + i + "] " + (managerMenu ? previousOrders[i].Customer.Name + "\t" : "") + previousOrders[i].CheckoutTimestamp.ToString() + "\t" + previousOrders[i].Total.ToString("C"));
+                userInterface.PrintText("[" + i + "] " + (managerMenu ? previousOrders[i].Customer.Name + "\t" : "") + previousOrders[i].CheckoutTimestamp.ToString() + '\t' + previousOrders[i].Location.LocationName + '\t' + previousOrders[i].Total.ToString("C"));
             }
             if (previousOrders.Count == 0) {
                 userInterface.PrintText(managerMenu ? "There don't seem to be any previous orders" : "You don't seem to have placed any previous orders");
