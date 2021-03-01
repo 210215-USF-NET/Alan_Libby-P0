@@ -45,7 +45,10 @@ namespace StoreApp
             transaction.Dispose();
         }
         static void Login() {
-            string name = userInterface.GetLine("Enter your name: ");
+            string name;
+            do {
+                name = userInterface.GetLine("Enter your name: ");
+            } while (name.Equals(""));
             currentUser = dataStore.GetCustomer(name);
             if (currentUser == null) {
                 currentUser = new StoreModels.Customer();
@@ -58,10 +61,10 @@ namespace StoreApp
             if (currentUser.IsManager) {
                 managerMenu = userInterface.GetLine("Would you like to log in as a manager? [ y / N ]: ").ToLower().Equals("y");
             }
+            Console.Clear();
         }
 
         static bool MainMenu() {
-            //Console.Clear();
             while (currentUser != null) {
                 userInterface.PrintText("Welcome, " + currentUser.Name);
                 userInterface.PrintText(
