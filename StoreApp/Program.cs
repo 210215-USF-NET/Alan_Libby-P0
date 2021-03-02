@@ -146,7 +146,14 @@ namespace StoreApp
                         }
                         bool sortByPrice = userInterface.GetLine("Sort by price? (default: date) [ y / N ]: ").ToLower().Equals("y");
                         bool desc = userInterface.GetLine("Use descending order? [ y / N ]: ").ToLower().Equals("y");
+                        string loc = userInterface.GetLine("Enter a location to filter by or press enter to view all orders: ");
                         List<Order> previousOrders =  managerMenu ? dataStore.GetAllOrders() : dataStore.GetCustomerOrders(currentUser);
+                        if (!loc.Equals("")) {
+                            for (int i = previousOrders.Count - 1; i >= 0; i--) {
+                                if (previousOrders[i].Location.LocationName.Equals(loc)) continue;
+                                previousOrders.RemoveAt(i);
+                            }
+                        }
                         if (sortByPrice) {
                             previousOrders.Sort((o1, o2) => {
                                 decimal diff = o1.Total - o2.Total;
