@@ -23,7 +23,7 @@ Additional tables: Inventory, OrderItem
 
 ### Additional Requirements
 - [ ] Exception Handling
-- [ ] Input validation
+- [x] Input validation
 - [ ] Logging using Serilog or Nlog
 - [ ] At least 10 unit tests
 - [x] Data should be persisted, (no data should be hard coded)
