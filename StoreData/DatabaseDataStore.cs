@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Transactions;
+using Serilog;
 
 namespace StoreData
 {
@@ -25,6 +26,10 @@ namespace StoreData
             Entities.Customer cEntity = mapper.ParseCustomer(customer);
             ctx.Customers.Add(cEntity);
             ctx.SaveChanges();
+            using var log = new LoggerConfiguration()
+                .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day, shared: true)
+                .CreateLogger();
+            log.Information("TRANSACTION: Created a new customer");
             return cEntity.CustomerId;
         }
         public List<Models.Product> GetAllProducts() {
@@ -54,6 +59,10 @@ namespace StoreData
             } else if (i.Quantity == 0) {
                 ctx.Inventories.Remove(i);
             }
+            using var log = new LoggerConfiguration()
+                .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day, shared: true)
+                .CreateLogger();
+            log.Information("TRANSACTION: Updated inventory");
             ctx.SaveChanges();
         }
         public void PlaceOrder(Models.Order order) {
@@ -71,10 +80,18 @@ namespace StoreData
             ctx.SaveChanges();
             try {
                 transaction.Commit();
+                using var log = new LoggerConfiguration()
+                    .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day, shared: true)
+                    .CreateLogger();
+                log.Information("TRANSACTION: Committed");
                 transaction.Dispose();
                 transaction = ctx.Database.BeginTransaction();
             } catch(Exception e) {
                 Console.WriteLine(e.StackTrace);
+                using var log = new LoggerConfiguration()
+                    .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day, shared: true)
+                    .CreateLogger();
+                log.Information("TRANSACTION: Rolled back due to database throwing exception");
                 transaction.Rollback();
             }
         }

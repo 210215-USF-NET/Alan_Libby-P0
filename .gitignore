@@ -16,6 +16,7 @@
 *.sln.docstates
 appsettings.json
 QueryTesting.sql
+StoreApp/log*.txt
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

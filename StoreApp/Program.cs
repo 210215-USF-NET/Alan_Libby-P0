@@ -8,6 +8,7 @@ using System.IO;
 using Microsoft.EntityFrameworkCore;
 using StoreData.Entities;
 using System.Transactions;
+using Serilog;
 
 namespace StoreApp
 {
